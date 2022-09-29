@@ -69,6 +69,13 @@
 
 </head>
 <body>
+  <label for="supermarket">Choose a supermarket:</label>
+  <select name="supermarkets" id="supermarketChoose">
+    {% for sup in supermarkets%}
+      <option value="{{sup}}">{{sup}}</option>
+      {{sup}} <BR>
+    {% endfor %}
+  </select>
   <div class="List">
     <div class="ListHeader">
       Products in the list <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#exampleModal" onclick="saveAdd()"><i class="fa fa-plus"></i></button>
@@ -97,15 +104,39 @@
             <label for="name">Fileira: </label>
         <input id="place" type="text" name="place"><BR>
             <button type="submit" id="AddEditbtn" class="insert btn btn-dark">Add</button>
-        </form>
       </div>
     </div>
   </div>
+</div>
+ADD Supermarket
+<div class="add-supermarket">
+  <label for="sup-name">Name: </label>
+  <input id="sup-name" type="text" name="sup-name"><BR>
+      <button type="submit" id="AddEditbtn" class="btn btn-dark" onclick="addSupermarket()">Add</button>
 </div>
 
 </body>
 
 <script>
+
+  function addSupermarket(){
+    $sup_name = $('#sup-name').val();
+    alert($sup_name);
+    $.ajax({
+      url: "/add_sup/",
+      method: "POST",
+      data: {
+        name: $sup_name
+      },
+      headers: {
+        "X-CSRFToken": "{{csrf_token}}"
+      }, 
+      success: function(data) {
+
+      }
+    
+  })
+}
 
   $(document).ready(function() {
       // carregar os dados via ajax - request_all_itens
@@ -302,6 +333,7 @@ $(function() { // falta corrigir o edit
     })
   })
 })
+
 
 
 // ordenação - acima 10 está sendo considerado abaixo de 2. Ele considera por digito.

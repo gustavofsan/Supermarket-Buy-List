@@ -11,5 +11,7 @@ urlpatterns = [
     path('buy_prod/<str:pk>/', views.buy_prod, name='buy_prod'),
     path('add_prod/', views.add_prod, name='add_prod'),
     path('request_all_itens/', views.request_all_itens, name='request_all_itens'),
+
+    path('add_sup/', views.add_sup, name='add_sup'),
 ]
 

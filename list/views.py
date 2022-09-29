@@ -2,7 +2,7 @@ from math import prod
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 
-from .models import Product
+from .models import Product, Supermarket
 
 
 from django.contrib.auth.models import User, Group
@@ -12,12 +12,9 @@ from .serializers import UserSerializer, GroupSerializer
 
 
 def index(request):
-    products = None
-    #products = Product.objects.all
-
-    false_and_true = {False, True}
-    context = {'products':products,
-                'false_and_true':false_and_true,
+    supermarkets = Supermarket.objects.all
+    context = {
+        'supermarkets':supermarkets
     }
     return render(request, 'index.html', context)
 
@@ -84,6 +81,20 @@ def buy_prod(request, pk):
             "bought": product.bought,
         }
         return JsonResponse(data)
+    return HttpResponse("Failed!")
+
+
+def add_sup(request):
+    if request.method == 'POST':
+        newSup = Supermarket(
+            name = request.POST['name'],
+        )
+        newSup.save()
+        data = {
+            "id": newSup.id,
+        }
+        return JsonResponse(data)
+        #return HttpResponse("Success!")
     return HttpResponse("Failed!")
 
 
