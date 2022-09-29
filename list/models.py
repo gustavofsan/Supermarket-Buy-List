@@ -13,15 +13,11 @@ class Product(models.Model):
     class Meta:
         ordering = ('place',)
 
-
-
 class Supermarket(models.Model):
     name = models.CharField(max_length=100)
     
     def __str__(self):
         return self.name
-
-
 
 class SupermarketRow(models.Model):
     place = models.CharField(max_length=100)
