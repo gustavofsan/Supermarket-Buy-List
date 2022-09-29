@@ -1,0 +1,315 @@
+<html>
+  <head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" />
+<script src="https://kit.fontawesome.com/59bc4047cf.js" crossorigin="anonymous"></script>
+<style>
+  body{
+			font-size: 20px;
+      background-color: #eee;
+		}
+		.List {
+			text-align: center;
+			min-width:500px;
+			margin-left: auto;
+			margin-right: auto;
+      padding-left: 5%;
+      padding-right: 5%;
+		}
+		.ListHeader {
+			text-align: center;
+		}
+		.boughtItemList   {
+			background-color: #eee;
+			border: 0.5px solid gray;
+			border-radius: 15px;
+		}
+		.toBuyItemList {
+			background-color: white;
+			border: 0.5px solid gray;
+			border-radius: 15px;
+		}
+		.itemName{
+			width: 60%;
+		}
+    
+		.place{
+			width: 10%;
+			text-align: center;
+		}
+		.toCheck{
+			width: 10%;
+			text-align: center;
+		}
+		.itemOptions{
+			width: 20%;
+			text-align: center;
+		}
+		.item{
+			display: flex;
+			padding: 10px;
+		}
+
+[contenteditable="true"].single-line {
+    white-space: nowrap;
+    overflow: hidden;
+} 
+[contenteditable="true"].single-line br {
+    display:none;
+
+}
+[contenteditable="true"].single-line * {
+    display:inline;
+    white-space:nowrap;
+}
+
+</style>
+
+
+</head>
+<body>
+  <div class="List">
+    <div class="ListHeader">
+      Products in the list <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#exampleModal" onclick="saveAdd()"><i class="fa fa-plus"></i></button>
+    </div>
+    <div class="toBuyItemList">
+      <span>Itens to buy</span>
+    </div>
+    <div class="boughtItemList">
+      <span>Itens bought</span>
+    </div>
+
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <label for="name">Produto: </label>
+        <input id="name" type="text" name="name"><BR>
+            <label for="name">Quantidade: </label>
+        <input id="quantity" type="number" name="quantity"><BR>
+            <label for="name">Fileira: </label>
+        <input id="place" type="text" name="place"><BR>
+            <button type="submit" id="AddEditbtn" class="insert btn btn-dark">Add</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+
+<script>
+
+  $(document).ready(function() {
+      // carregar os dados via ajax - request_all_itens
+      $.ajax({
+      url: "/request_all_itens/",
+      method: "POST",
+      data: {
+      },
+      headers: {
+        "X-CSRFToken": "{{csrf_token}}"
+      }, 
+        success: function(data) {
+          for(var i = 0; i < data['products_to_buy'].length; i++) {
+            createItem(false, data['products_to_buy'][i].id, data['products_to_buy'][i].name, data['products_to_buy'][i].place, data['products_to_buy'][i].quantity);
+          }
+          for(var i = 0; i < data['products_bought'].length; i++) {
+            createItem(true, data['products_bought'][i].id, data['products_bought'][i].name, data['products_bought'][i].place, data['products_bought'][i].quantity);
+          }
+        }
+    })
+  });
+
+  // This is executed with onfocusout
+  // only change the name
+  function changeProd(el){ 
+    $new_prod_name = el.innerHTML.replace("&nbsp;", "");
+    $new_prod_name = el.innerHTML.replace("<br>", "");
+    el = el.parentNode;
+    el = el.parentNode; // I use two of these to get the div with item class
+    $id = $(el).attr('id');
+    $url = "/edit_prod/"+$id+"/";
+    $.ajax({
+      url: $url,
+      method: "POST",
+      data: {
+        name: $new_prod_name
+      },
+      headers: {
+        "X-CSRFToken": "{{csrf_token}}"
+      }, success: function( data )
+        {
+          el.setAttribute("data-name", $new_prod_name);
+        }
+    })
+  }
+  function ChangeCheck(el){
+    el = el.parentNode;
+    el = el.parentNode; // I use two of these to get the div with item class
+    $id = $(el).attr('id');
+    $place = el.getAttribute('data-place');
+    $url = "buy_prod/"+$id+"/";
+    
+    $.ajax({
+      url: $url,
+      method: "POST",
+      data: {
+      },
+      headers: {
+        "X-CSRFToken": "{{csrf_token}}"
+      }, success: function( data ) 
+      {
+        el.parentNode.removeChild(el);
+        if(data["bought"] == false){
+          var className = "toBuyItemList";
+        } else{
+          var className = "boughtItemList";
+        }
+        insertItem(className, el, $place);
+      }
+    })
+  }
+
+
+  function delProd(el) {
+    el = el.parentNode;
+    el = el.parentNode;
+    $id = $(el).attr('id');
+    $url = "delete_prod/"+$id;
+    var list = $(el).parent()[0];
+
+    $.ajax({
+      url: $url,
+      method: "POST",
+      data: {
+      },
+      headers: {
+        "X-CSRFToken": "{{csrf_token}}"
+      }, success: function( data ) 
+        {          
+          list.removeChild(el);
+        }
+    })
+  }
+
+  // When I choose Edit, this function transfer to the modal the Required Information for editting
+  function saveEdit(el){
+    el_parent = el.parentNode;
+    el_parent = el_parent.parentNode;
+    var li = $(el).parent()[0];
+    var index = $(li).index();
+
+    $("#AddEditbtn").text("Edit");
+    $('#name').val($(el_parent).data('name'));
+    $('#quantity').val($(el_parent).data('quantity'));
+    $('#place').val($(el_parent).data('place'));
+    $('.insert').val(el_parent.id);
+  }
+
+  function insertItem(listClass, el, $prod_place){
+    var elementClass = document.getElementsByClassName(listClass)[0];
+    var searchElem = elementClass.children;
+    var i = 1;
+    for( ; i < searchElem.length && searchElem[i].getAttribute('data-place') < $prod_place; i++) {
+    }
+    if(i < searchElem.length){
+      $(searchElem[i]).before(el);
+    } else{
+      $(elementClass).append(el);
+    }
+  }
+
+  // Function to create an add an item to any list
+  // True - insert in bought list
+  // False - insert in to buy list
+  function createItem(list, $id, $prod_name, $prod_place, $prod_quant){
+    var div = '<div class="Item" id='+$id+' data-name='+$prod_name+' data-quantity='+$prod_quant+' data-place='+$prod_place+'>';
+    var div = div+ '<span class="place">';
+    var div = div+ $prod_place;
+    var div = div+ '</span>'
+    var div = div+ '<span class="toCheck">'
+    if(list == false){
+      var className = "toBuyItemList";
+      div = div + '<input type="checkbox"  onchange="ChangeCheck(this)">';
+    } else{
+      var className = "boughtItemList";
+      div = div + '<input type="checkbox" checked onchange="ChangeCheck(this)">';
+    }
+    var div = div+ '</span>';
+    var div = div+ '<span class="itemName">';
+    var div = div+ '<div contenteditable="true" class="single-line" onfocusout="changeProd(this)">'+$prod_name+' </div>';
+    var div = div+ '</span>';
+    var div = div+ '<span class="itemOptions">';
+    var div = div+ '<button class="btn btn-success btn-sm" data-toggle="modal" data-target="#exampleModal" onclick="saveEdit(this)">Edit</button>';
+    var div = div+ '<a class="delProd btn btn-danger" onclick="delProd(this)"><i class="fa fa-trash-o"></i></a>'
+    var div = div+ '</span>';
+    var div = div+ '</div>';
+    insertItem(className, div, $prod_place);
+  }
+
+  function saveAdd(){
+    $("#AddEditbtn").text("Add");
+    $('#name').val("");
+    $('#quantity').val("");
+  }
+
+$(function() { // falta corrigir o edit
+  $('.insert').on('click', function() {
+    if($("#AddEditbtn").text() == "Edit"){
+      $url = "/edit_prod/"+$('.insert').val()+"/";
+    } else{
+      $url = "/add_prod/";
+    }
+    $prod_name = $('#name').val();
+    $prod_quant = $('#quantity').val();
+    $prod_place = $('#place').val();
+    $id = $('.insert').val();
+    $.ajax({
+      url: $url,
+      method: "POST",
+      data: {
+        name: $prod_name,
+        quantity: $prod_quant,
+        place: $prod_place
+      },
+      headers: {
+        "X-CSRFToken": "{{csrf_token}}"
+      }, success: function( data )
+        {
+          if($("#AddEditbtn").text() != "Edit"){ // ADD
+            $id = data["id"];
+            createItem(false, $id, $prod_name, $prod_place, $prod_quant);
+          } else{
+            el = document.getElementById($id);
+            list = el.parentNode;
+            list.removeChild(el);
+            // aqui tem que verificar a lista pra ver se é true ou false
+            if(list.className == 'toBuyItemList'){
+              createItem(false, $id, $prod_name, $prod_place, $prod_quant);
+            } else{
+              createItem(true, $id, $prod_name, $prod_place, $prod_quant);
+            }
+          }
+        }
+    })
+  })
+})
+
+
+// ordenação - acima 10 está sendo considerado abaixo de 2. Ele considera por digito.
+// Colocar uma devolutiva - item inserido com sucesso - item comprado com sucesso - item inserido na lista de compras - item excluido com sucesso
+// Tem certeza que gostaria de excluir?
+// Adicionar receitas
+// Multiplos supermercados
+
+</script>
+
+</html>
