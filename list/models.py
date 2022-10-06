@@ -25,4 +25,4 @@ class SupermarketProduct(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     
     def __str__(self):
-        return self.product.name+self.supermarket.name
+        return self.product.name+ " - " + self.supermarket.name

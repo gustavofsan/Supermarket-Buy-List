@@ -166,10 +166,10 @@ ADD Supermarket
       }, 
         success: function(data) {
           for(var i = 0; i < data['products_to_buy'].length; i++) {
-            createItem(false, data['products_to_buy'][i].id, data['products_to_buy'][i].name, data['products_to_buy'][i].place, data['products_to_buy'][i].quantity);
+            createItem(false, data['products_to_buy'][i].prodId, data['products_to_buy'][i].name, data['products_to_buy'][i].place, data['products_to_buy'][i].quantity);
           }
           for(var i = 0; i < data['products_bought'].length; i++) {
-            createItem(true, data['products_bought'][i].id, data['products_bought'][i].name, data['products_bought'][i].place, data['products_bought'][i].quantity);
+            createItem(true, data['products_bought'][i].prodId, data['products_bought'][i].name, data['products_bought'][i].place, data['products_bought'][i].quantity);
           }
         }
     })
