@@ -97,6 +97,14 @@ def add_sup(request):
         #return HttpResponse("Success!")
     return HttpResponse("Failed!")
 
+def get_all_itens_sup(request,pk):
+    print("Done")
+    data = {
+        
+    }
+    return JsonResponse(data)
+    return HttpResponse("Failed!")
+
 
 class UserViewSet(viewsets.ModelViewSet):
     """

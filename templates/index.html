@@ -70,9 +70,9 @@
 </head>
 <body>
   <label for="supermarket">Choose a supermarket:</label>
-  <select name="supermarkets" id="supermarketChoose">
+  <select name="supermarkets" id="supermarketChoose" onchange="changeSupermarket()">
     {% for sup in supermarkets%}
-      <option value="{{sup}}">{{sup}}</option>
+      <option value="{{sup.id}}">{{sup}}</option>
       {{sup}} <BR>
     {% endfor %}
   </select>
@@ -119,9 +119,26 @@ ADD Supermarket
 
 <script>
 
+  function changeSupermarket(){
+    var x = document.getElementById("supermarketChoose").value;
+    $.ajax({
+      url: "/get_all_itens_sup/"+x+"/",
+      method: "POST",
+      data: {
+      },
+      headers: {
+        "X-CSRFToken": "{{csrf_token}}"
+      }, 
+      success: function(data) {
+
+      }
+    
+  })
+  }
+
   function addSupermarket(){
     $sup_name = $('#sup-name').val();
-    alert($sup_name);
+    //alert($sup_name);
     $.ajax({
       url: "/add_sup/",
       method: "POST",
@@ -134,7 +151,6 @@ ADD Supermarket
       success: function(data) {
 
       }
-    
   })
 }
 
@@ -341,6 +357,8 @@ $(function() { // falta corrigir o edit
 // Tem certeza que gostaria de excluir?
 // Adicionar receitas
 // Multiplos supermercados
+
+
 
 </script>
 

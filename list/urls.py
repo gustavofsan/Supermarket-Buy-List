@@ -13,5 +13,6 @@ urlpatterns = [
     path('request_all_itens/', views.request_all_itens, name='request_all_itens'),
 
     path('add_sup/', views.add_sup, name='add_sup'),
+    path('get_all_itens_sup/<str:pk>/', views.get_all_itens_sup, name='get_all_itens_sup'),
 ]
 
