@@ -98,12 +98,18 @@ def add_sup(request):
     return HttpResponse("Failed!")
 
 def get_all_itens_sup(request,pk):
-    print("Done")
+    products_to_buy = Product.objects.filter(bought=False).values()
+    products_bought = Product.objects.filter(bought=True).values()
+    print(products_to_buy)
+    print(products_bought)
+
     data = {
-        
+        "products_to_buy": list(products_to_buy),
+        "products_bought": list(products_bought),
     }
+    print("CHEGOU AQUI")
+    #return JsonResponse(True)
     return JsonResponse(data)
-    return HttpResponse("Failed!")
 
 
 class UserViewSet(viewsets.ModelViewSet):
