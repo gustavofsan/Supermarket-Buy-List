@@ -130,7 +130,8 @@ ADD Supermarket
         "X-CSRFToken": "{{csrf_token}}"
       }, 
       success: function(data) {
-
+        remove_all_items();
+        insert_all_items(data);
       }
     
   })
@@ -154,6 +155,28 @@ ADD Supermarket
   })
 }
 
+  function remove_all_items(){
+    var elementClass = document.getElementsByClassName("toBuyItemList")[0];
+    var searchElem = elementClass.children;
+    for( var i=1; i < searchElem.length ; i++) {
+      elementClass.removeChild(searchElem[i]);
+    }
+    elementClass = document.getElementsByClassName("boughtItemList")[0];
+    searchElem = elementClass.children;
+    for( var i=1; i < searchElem.length ; i++) {
+      elementClass.removeChild(searchElem[i]);
+    }
+  }
+  function insert_all_items(data){
+    for(var i = 0; i < data['products_to_buy'].length; i++) {
+      createItem(false, data['products_to_buy'][i].prodId, data['products_to_buy'][i].name, data['products_to_buy'][i].place, data['products_to_buy'][i].quantity);
+    }
+    for(var i = 0; i < data['products_bought'].length; i++) {
+      createItem(true, data['products_bought'][i].prodId, data['products_bought'][i].name, data['products_bought'][i].place, data['products_bought'][i].quantity);
+    
+    }
+  }
+
   $(document).ready(function() {
       // carregar os dados via ajax - request_all_itens
       $.ajax({
@@ -165,12 +188,7 @@ ADD Supermarket
         "X-CSRFToken": "{{csrf_token}}"
       }, 
         success: function(data) {
-          for(var i = 0; i < data['products_to_buy'].length; i++) {
-            createItem(false, data['products_to_buy'][i].prodId, data['products_to_buy'][i].name, data['products_to_buy'][i].place, data['products_to_buy'][i].quantity);
-          }
-          for(var i = 0; i < data['products_bought'].length; i++) {
-            createItem(true, data['products_bought'][i].prodId, data['products_bought'][i].name, data['products_bought'][i].place, data['products_bought'][i].quantity);
-          }
+          insert_all_items(data);
         }
     })
   });

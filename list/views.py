@@ -22,27 +22,8 @@ def index(request):
 
 
 def request_all_itens(request):
-    current_supermarket = 1
-    products = SupermarketProduct.objects.filter(supermarket__id=current_supermarket)
-    products_to_buy = products.filter(product__bought=False).values('price',
-                                                                    'place',
-                                                                    prodId=F('product__id'),
-                                                                    name=F('product__name'),
-                                                                    quantity=F('product__quantity'))
-                                                                    
-    products_bought = products.filter(product__bought=True).values('price',
-                                                                    'place',
-                                                                    prodId=F('product__id'),
-                                                                    name=F('product__name'),
-                                                                    quantity=F('product__quantity'))
-
-    data = {
-        "products_to_buy": list(products_to_buy),
-        "products_bought": list(products_bought),
-    }
-    print("CHEGOU AQUI")
-    #return JsonResponse(True)
-    return JsonResponse(data)
+    return get_all_itens_sup(request,1)
+    #return JsonResponse(data)
 
 def add_prod(request):
     if request.method == 'POST':
@@ -118,17 +99,24 @@ def add_sup(request):
     return HttpResponse("Failed!")
 
 def get_all_itens_sup(request,pk):
-    products_to_buy = Product.objects.filter(bought=False).values()
-    products_bought = Product.objects.filter(bought=True).values()
-    print(products_to_buy)
-    print(products_bought)
+    current_supermarket = pk
+    products = SupermarketProduct.objects.filter(supermarket__id=current_supermarket)
+    products_to_buy = products.filter(product__bought=False).values('price',
+                                                                    'place',
+                                                                    prodId=F('product__id'),
+                                                                    name=F('product__name'),
+                                                                    quantity=F('product__quantity'))
+                                                                    
+    products_bought = products.filter(product__bought=True).values('price',
+                                                                    'place',
+                                                                    prodId=F('product__id'),
+                                                                    name=F('product__name'),
+                                                                    quantity=F('product__quantity'))
 
     data = {
         "products_to_buy": list(products_to_buy),
         "products_bought": list(products_bought),
     }
-    print("CHEGOU AQUI")
-    #return JsonResponse(True)
     return JsonResponse(data)
 
 
