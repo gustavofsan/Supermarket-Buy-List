@@ -78,7 +78,7 @@
   </select>
   <div class="List">
     <div class="ListHeader">
-      Products in the list <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#exampleModal" onclick="saveAdd()"><i class="fa fa-plus"></i></button>
+      Products in the list <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#ModalInsert" onclick="saveAdd()"><i class="fa fa-plus"></i></button>
     </div>
     <div class="toBuyItemList">
       <span>Itens to buy</span>
@@ -87,40 +87,90 @@
       <span>Itens bought</span>
     </div>
 
-<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="ModalEdit" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+        <h5 class="modal-title" id="exampleModalLabel">Edit</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <label for="supermarket">Supermarket:</label>
+        <select name="supermarkets" id="supermarketEdit" onchange="changeSupermarketEdit()">
+          {% for sup in supermarkets%}
+            <option value="{{sup.id}}">{{sup}}</option>
+            {{sup}} <BR>
+          {% endfor %}
+        </select>
+        <BR>
+        <label for="name">Produto: </label>
+        <input id="nameEdit" type="text" name="name"><BR>
+            <label for="name">Quantidade: </label>
+        <input id="quantityEdit" type="number" name="quantity"><BR>
+            <label for="name">Fileira: </label>
+        <input id="placeEdit" type="text" name="place"><BR>
+            <button type="submit" id="Editbtn" class="editbtn btn btn-dark" onclick="EditItem()">Edit</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="ModalInsert" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Insert Product</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div class="modal-body">
         <label for="name">Produto: </label>
-        <input id="name" type="text" name="name"><BR>
+        <input id="nameAdd" type="text" name="name"><BR>
             <label for="name">Quantidade: </label>
-        <input id="quantity" type="number" name="quantity"><BR>
-            <label for="name">Fileira: </label>
-        <input id="place" type="text" name="place"><BR>
-            <button type="submit" id="AddEditbtn" class="insert btn btn-dark">Add</button>
+        <input id="quantityAdd" type="number" name="quantity"><BR>
+            <button type="submit" id="Addbtn" class="insertbtn btn btn-dark" onclick="addNewItem()">Add</button>
       </div>
     </div>
   </div>
 </div>
+
 ADD Supermarket
 <div class="add-supermarket">
   <label for="sup-name">Name: </label>
   <input id="sup-name" type="text" name="sup-name"><BR>
-      <button type="submit" id="AddEditbtn" class="btn btn-dark" onclick="addSupermarket()">Add</button>
+      <button type="submit" class="btn btn-dark" onclick="addSupermarket()">Add</button>
 </div>
 
 </body>
 
 <script>
+  function changeSupermarketEdit(){
+    $supermarket_id = document.getElementById("supermarketEdit").value;
+    $prod_id = $('.editbtn').val();
+    $.ajax({
+      url: "/get_item_details/",
+      method: "POST",
+      data: {
+        prod_id: $prod_id,
+        supermarket_id: $supermarket_id
+      },
+      headers: {
+        "X-CSRFToken": "{{csrf_token}}"
+      }, 
+      success: function(data) {
+        $('#placeEdit').val(data["place"]);
+      }
+    })
+  }
 
   function changeSupermarket(){
     var x = document.getElementById("supermarketChoose").value;
+    
+    const $select = document.querySelector('#supermarketEdit');
+    $select.value = x;
     $.ajax({
       url: "/get_all_itens_sup/"+x+"/",
       method: "POST",
@@ -139,7 +189,6 @@ ADD Supermarket
 
   function addSupermarket(){
     $sup_name = $('#sup-name').val();
-    //alert($sup_name);
     $.ajax({
       url: "/add_sup/",
       method: "POST",
@@ -150,35 +199,10 @@ ADD Supermarket
         "X-CSRFToken": "{{csrf_token}}"
       }, 
       success: function(data) {
-
       }
-  })
-}
-
-  function remove_all_items(){
-    var elementClass = document.getElementsByClassName("toBuyItemList")[0];
-    var searchElem = elementClass.children;
-    for( var i=1; i < searchElem.length ; i++) {
-      elementClass.removeChild(searchElem[i]);
-    }
-    elementClass = document.getElementsByClassName("boughtItemList")[0];
-    searchElem = elementClass.children;
-    for( var i=1; i < searchElem.length ; i++) {
-      elementClass.removeChild(searchElem[i]);
-    }
+    })
   }
-  function insert_all_items(data){
-    for(var i = 0; i < data['products_to_buy'].length; i++) {
-      createItem(false, data['products_to_buy'][i].prodId, data['products_to_buy'][i].name, data['products_to_buy'][i].place, data['products_to_buy'][i].quantity);
-    }
-    for(var i = 0; i < data['products_bought'].length; i++) {
-      createItem(true, data['products_bought'][i].prodId, data['products_bought'][i].name, data['products_bought'][i].place, data['products_bought'][i].quantity);
-    
-    }
-  }
-
   $(document).ready(function() {
-      // carregar os dados via ajax - request_all_itens
       $.ajax({
       url: "/request_all_itens/",
       method: "POST",
@@ -272,11 +296,10 @@ ADD Supermarket
     var li = $(el).parent()[0];
     var index = $(li).index();
 
-    $("#AddEditbtn").text("Edit");
-    $('#name').val($(el_parent).data('name'));
-    $('#quantity').val($(el_parent).data('quantity'));
-    $('#place').val($(el_parent).data('place'));
-    $('.insert').val(el_parent.id);
+    $('#nameEdit').val($(el_parent).data('name'));
+    $('#quantityEdit').val($(el_parent).data('quantity'));
+    $('#placeEdit').val($(el_parent).data('place'));
+    $('.editbtn').val(el_parent.id);
   }
 
   function insertItem(listClass, el, $prod_place){
@@ -313,7 +336,7 @@ ADD Supermarket
     var div = div+ '<div contenteditable="true" class="single-line" onfocusout="changeProd(this)">'+$prod_name+' </div>';
     var div = div+ '</span>';
     var div = div+ '<span class="itemOptions">';
-    var div = div+ '<button class="btn btn-success btn-sm" data-toggle="modal" data-target="#exampleModal" onclick="saveEdit(this)">Edit</button>';
+    var div = div+ '<button class="btn btn-success btn-sm" data-toggle="modal" data-target="#ModalEdit" onclick="saveEdit(this)">Edit</button>';
     var div = div+ '<a class="delProd btn btn-danger" onclick="delProd(this)"><i class="fa fa-trash-o"></i></a>'
     var div = div+ '</span>';
     var div = div+ '</div>';
@@ -326,57 +349,93 @@ ADD Supermarket
     $('#quantity').val("");
   }
 
-$(function() { // falta corrigir o edit
-  $('.insert').on('click', function() {
-    if($("#AddEditbtn").text() == "Edit"){
-      $url = "/edit_prod/"+$('.insert').val()+"/";
-    } else{
-      $url = "/add_prod/";
-    }
-    $prod_name = $('#name').val();
-    $prod_quant = $('#quantity').val();
-    $prod_place = $('#place').val();
-    $id = $('.insert').val();
+  function addNewItem(){
+    $url = "/add_prod/";
+    $prod_name = $('#nameAdd').val();
+    $prod_quant = $('#quantityAdd').val();
+    $.ajax({
+      url: $url,
+      method: "POST",
+      data: {
+        name: $prod_name,
+        quantity: $prod_quant
+      },
+      headers: {
+        "X-CSRFToken": "{{csrf_token}}"
+      }, success: function( data )
+        {
+            $id = data["id"];
+            createItem(false, $id, $prod_name, "", $prod_quant);
+        }
+    })
+  }
+
+  function EditItem(){
+    $url = "/edit_prod/"+$('.editbtn').val()+"/";
+    $supermarket_id = document.getElementById("supermarketEdit").value;
+    $current_supermarket_id = document.getElementById("supermarketChoose").value;
+    $prod_name = $('#nameEdit').val();
+    $prod_quant = $('#quantityEdit').val();
+    $prod_place = $('#placeEdit').val();
+    $id = $('.editbtn').val();
+
     $.ajax({
       url: $url,
       method: "POST",
       data: {
         name: $prod_name,
         quantity: $prod_quant,
-        place: $prod_place
+        place: $prod_place,
+        supermarket_id: $supermarket_id,
       },
       headers: {
         "X-CSRFToken": "{{csrf_token}}"
       }, success: function( data )
-        {
-          if($("#AddEditbtn").text() != "Edit"){ // ADD
-            $id = data["id"];
-            createItem(false, $id, $prod_name, $prod_place, $prod_quant);
-          } else{
-            el = document.getElementById($id);
-            list = el.parentNode;
-            list.removeChild(el);
-            // aqui tem que verificar a lista pra ver se é true ou false
-            if(list.className == 'toBuyItemList'){
-              createItem(false, $id, $prod_name, $prod_place, $prod_quant);
-            } else{
-              createItem(true, $id, $prod_name, $prod_place, $prod_quant);
-            }
-          }
+      {
+        el = document.getElementById($id);
+        list = el.parentNode;
+        if($supermarket_id != $current_supermarket_id){ // coisas que são por mercado eu coloco aqui
+          $prod_place = $(el).attr('data-place');
         }
+        if(list.className == 'toBuyItemList'){
+          createItem(false, $id, $prod_name, $prod_place, $prod_quant);
+        } else{
+          createItem(true, $id, $prod_name, $prod_place, $prod_quant);
+        }
+        list.removeChild(el);
+      }
     })
-  })
-})
+  }
 
+  function remove_all_items(){
+    var elementClass = document.getElementsByClassName("toBuyItemList")[0];
+    var searchElem = elementClass.children;
+    for( var i=searchElem.length-1; i > 0; i--) {
+      elementClass.removeChild(searchElem[i]);
+    }
+    elementClass = document.getElementsByClassName("boughtItemList")[0];
+    searchElem = elementClass.children;
+    for( var i=searchElem.length-1; i > 0; i--) {
+      elementClass.removeChild(searchElem[i]);
+    }
+  }
+
+  function insert_all_items(data){
+    for(var i = 0; i < data['products_to_buy'].length; i++) { 
+      createItem(false, data['products_to_buy'][i].prodId, data['products_to_buy'][i].name, data['products_to_buy'][i].place, data['products_to_buy'][i].quantity);
+    }
+    //console.log("part 2");
+    for(var i = 0; i < data['products_bought'].length; i++) {
+      createItem(true, data['products_bought'][i].prodId, data['products_bought'][i].name, data['products_bought'][i].place, data['products_bought'][i].quantity);
+    
+    }
+  }
 
 
 // ordenação - acima 10 está sendo considerado abaixo de 2. Ele considera por digito.
 // Colocar uma devolutiva - item inserido com sucesso - item comprado com sucesso - item inserido na lista de compras - item excluido com sucesso
 // Tem certeza que gostaria de excluir?
 // Adicionar receitas
-// Multiplos supermercados
-
-
 
 </script>
 

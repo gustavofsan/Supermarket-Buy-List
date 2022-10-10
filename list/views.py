@@ -64,12 +64,17 @@ def edit_prod(request, pk):
             product.name = request.POST['name']
         if 'quantity' in request.POST:
             product.quantity = request.POST['quantity']
-        if 'place' in request.POST:
-            product.place = request.POST['place']
+        
         product.save()
         data = {
             "bought": product.bought,
         }
+        if 'place' in request.POST:
+            place = request.POST['place']
+        if 'supermarket_id' in request.POST:
+            supermarket_id = request.POST['supermarket_id']
+            supermarketProduct = SupermarketProduct.objects.filter(supermarket__id=supermarket_id, product__id=product.id).update(place=place)
+
         return JsonResponse(data)
     return HttpResponse("Failed!")
 
@@ -96,6 +101,18 @@ def add_sup(request):
         }
         return JsonResponse(data)
         #return HttpResponse("Success!")
+    return HttpResponse("Failed!")
+
+def get_item_details(request):
+    if request.method == 'POST':
+        prod_id = request.POST['prod_id']
+        supermarket_id = request.POST['supermarket_id']
+        supermarketProduct = SupermarketProduct.objects.filter(supermarket__id=supermarket_id, product__id=prod_id)
+        #print(supermarketProduct[0].place)
+        data = {
+            "place": supermarketProduct[0].place,
+        }
+        return JsonResponse(data)
     return HttpResponse("Failed!")
 
 def get_all_itens_sup(request,pk):
