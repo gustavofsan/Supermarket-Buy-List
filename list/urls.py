@@ -16,5 +16,9 @@ urlpatterns = [
 
     path('add_sup/', views.add_sup, name='add_sup'),
     path('get_all_itens_sup/<str:pk>/', views.get_all_itens_sup, name='get_all_itens_sup'),
+
+    
+    path('add_recipe/', views.add_recipe, name='add_recipe'),
+    path('get_all_itens_recipe/<str:pk>/', views.get_all_itens_recipe, name='get_all_itens_recipe'),
 ]
 

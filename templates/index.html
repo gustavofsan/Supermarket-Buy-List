@@ -140,13 +140,91 @@
 ADD Supermarket
 <div class="add-supermarket">
   <label for="sup-name">Name: </label>
-  <input id="sup-name" type="text" name="sup-name"><BR>
-      <button type="submit" class="btn btn-dark" onclick="addSupermarket()">Add</button>
+    <input id="sup-name" type="text" name="sup-name"><BR>
+  <button type="submit" class="btn btn-dark" onclick="addSupermarket()">Add</button>
 </div>
 
+
+ADD Recipe
+<div class="add-recipe">
+  <label for="recipe-name">Name: </label>
+    <input id="recipe-name" type="text" name="recipe-name"><BR>
+  <label for="recipe-name">Making Time: </label>
+    <input id="recipe-time" type="text" name="recipe-time"><BR>
+  <label for="recipe-serves">Serves: </label>
+    <input id="recipe-serves" type="text" name="recipe-serves"><BR>
+  <button type="submit" class="btn btn-dark" onclick="addRecipe()">Add</button>
+</div>
+
+MY RECIPES: <BR>
+<label for="recipes">Choose a Recipe:</label>
+  <select name="recipes" id="recipeChoose" onchange="changeRecipe()">
+    <option disabled selected value> -- select an recipe -- </option>
+    {% for recipe in recipes%}
+      <option value="{{recipe.id}}">{{recipe}}</option>
+      {{recipe}} <BR>
+    {% endfor %}
+</select>
+
+<div class="recipe">
+  <span>Itens of Recipe</span>
+</div>
 </body>
 
 <script>
+  function addRecipe(){
+    $recipe_name = $('#recipe-name').val();
+    $recipe_time = $('#recipe-time').val();
+    $recipe_serves = $('#recipe-serves').val();
+    $.ajax({
+      url: "/add_recipe/",
+      method: "POST",
+      data: {
+        name: $recipe_name,
+        time: $recipe_time,
+        serves: $recipe_serves
+      },
+      headers: {
+        "X-CSRFToken": "{{csrf_token}}"
+      }, 
+      success: function(data) {
+      }
+    })
+  }
+
+  function changeRecipe(){
+    var x = document.getElementById("recipeChoose").value;
+    $.ajax({
+      url: "/get_all_itens_recipe/"+x+"/",
+      method: "POST",
+      data: {
+      },
+      headers: {
+        "X-CSRFToken": "{{csrf_token}}"
+      }, 
+      success: function(data) {
+        var elementClass = document.getElementsByClassName("recipe")[0];
+        remove_all_items_recipe(elementClass);
+        insert_all_items_recipe(elementClass, data);
+        //alert(data);
+      }
+  })
+  }
+
+  function remove_all_items_recipe(elementClass){
+    var searchElem = elementClass.children;
+    for( var i=searchElem.length-1; i > 0; i--){
+      elementClass.removeChild(searchElem[i]);
+    }
+  }
+
+  function insert_all_items_recipe(elementClass, data){
+    for(var i = 0; i < data['products'].length; i++){
+      var div = '<div class="ProdInRecipe">'+data['products'][i].name + "</div>";
+      $(elementClass).append(div);
+    }
+  }
+
   function changeSupermarketEdit(){
     $supermarket_id = document.getElementById("supermarketEdit").value;
     $prod_id = $('.editbtn').val();
@@ -168,7 +246,6 @@ ADD Supermarket
 
   function changeSupermarket(){
     var x = document.getElementById("supermarketChoose").value;
-    
     const $select = document.querySelector('#supermarketEdit');
     $select.value = x;
     $.ajax({

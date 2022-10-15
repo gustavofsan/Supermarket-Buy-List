@@ -1,3 +1,4 @@
+from itertools import product
 from unittest.util import _MAX_LENGTH
 from django.db import models
 
@@ -26,3 +27,15 @@ class SupermarketProduct(models.Model):
     
     def __str__(self):
         return self.product.name+ " - " + self.supermarket.name
+
+class Recipe(models.Model):
+    name = models.CharField(max_length=100)
+    time = models.CharField(max_length=20)
+    serves = models.CharField(max_length=20)
+    def __str__(self):
+        return self.name
+
+class ProductInRecipe(models.Model):
+    product = models.ForeignKey(Product,  null=True, on_delete=models.SET_NULL)
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+    quantity = models.IntegerField()

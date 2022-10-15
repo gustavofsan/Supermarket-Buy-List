@@ -3,7 +3,7 @@ from socketserver import ThreadingUDPServer
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 
-from .models import Product, Supermarket, SupermarketProduct
+from .models import Product, ProductInRecipe, Recipe, Supermarket, SupermarketProduct
 from django.db.models import F
 
 
@@ -15,8 +15,10 @@ from .serializers import UserSerializer, GroupSerializer
 
 def index(request):
     supermarkets = Supermarket.objects.all
+    recipes = Recipe.objects.all
     context = {
-        'supermarkets':supermarkets
+        'supermarkets':supermarkets,
+        'recipes':recipes
     }
     return render(request, 'index.html', context)
 
@@ -100,7 +102,6 @@ def add_sup(request):
             "id": newSup.id,
         }
         return JsonResponse(data)
-        #return HttpResponse("Success!")
     return HttpResponse("Failed!")
 
 def get_item_details(request):
@@ -133,6 +134,35 @@ def get_all_itens_sup(request,pk):
     data = {
         "products_to_buy": list(products_to_buy),
         "products_bought": list(products_bought),
+    }
+    return JsonResponse(data)
+
+
+def add_recipe(request):
+    if request.method == 'POST':
+        newRecipe = Recipe(
+            name = request.POST['name'],
+            time = request.POST['time'],
+            serves = request.POST['serves'],
+        )
+        newRecipe.save()
+        data = {
+            "id": newRecipe.id,
+        }
+        return JsonResponse(data)
+    return HttpResponse("Failed!")
+
+def get_all_itens_recipe(request,pk):
+    current_recipe = pk
+    products = ProductInRecipe.objects.filter(recipe__id=current_recipe).values('quantity',
+                                                                                prodId=F('product__id'), 
+                                                                                name=F('product__name'),) 
+                                                                                #talvez precise trazer mais dados
+    print(products)
+    data = {
+        "products": list(products),
+        #"products_to_buy": list(products_to_buy),
+        #"products_bought": list(products_bought),
     }
     return JsonResponse(data)
 
