@@ -4,80 +4,103 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" />
 <script src="https://kit.fontawesome.com/59bc4047cf.js" crossorigin="anonymous"></script>
+
 <style>
   body{
-			font-size: 20px;
-      background-color: #eee;
-		}
-		.List {
-			text-align: center;
-			min-width:500px;
-			margin-left: auto;
-			margin-right: auto;
-      padding-left: 5%;
-      padding-right: 5%;
-		}
-		.ListHeader {
-			text-align: center;
-		}
-		.boughtItemList   {
-			background-color: #eee;
-			border: 0.5px solid gray;
-			border-radius: 15px;
-		}
-		.toBuyItemList {
-			background-color: white;
-			border: 0.5px solid gray;
-			border-radius: 15px;
-		}
-		.itemName{
-			width: 60%;
-		}
-    
-		.place{
-			width: 10%;
-			text-align: center;
-		}
-		.toCheck{
-			width: 10%;
-			text-align: center;
-		}
-		.itemOptions{
-			width: 20%;
-			text-align: center;
-		}
-		.item{
-			display: flex;
-			padding: 10px;
-		}
-
-[contenteditable="true"].single-line {
+    font-size: 20px;
+    background-color: #eee;
+  }
+  .List{
+    text-align: center;
+    min-width:500px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 5%;
+    padding-right: 5%;
+  }
+  .ListHeader{
+    text-align: center;
+  }
+  .boughtItemList{
+    background-color: #eee;
+    border: 0.5px solid gray;
+    border-radius: 15px;
+  }
+  .toBuyItemList{
+    background-color: white;
+    border: 0.5px solid gray;
+    border-radius: 15px;
+  }
+  .recipe{
+    background-color: white;
+    border: 0.5px solid gray;
+    border-radius: 15px;
+  }
+  .itemName{
+    width: 60%;
+  }
+  .place{
+    width: 10%;
+    text-align: center;
+  }
+  .toCheck{
+    width: 10%;
+    text-align: center;
+  }
+  .itemOptions{
+    width: 20%;
+    text-align: center;
+  }
+  .item{
+    display: flex;
+    padding: 10px;
+  }
+  [contenteditable="true"].single-line{
     white-space: nowrap;
     overflow: hidden;
-} 
-[contenteditable="true"].single-line br {
+  }
+  [contenteditable="true"].single-line br{
     display:none;
-
-}
-[contenteditable="true"].single-line * {
+  }
+  [contenteditable="true"].single-line *{
     display:inline;
     white-space:nowrap;
-}
-
+  }
 </style>
 
 
 </head>
 <body>
-  <label for="supermarket">Choose a supermarket:</label>
-  <select name="supermarkets" id="supermarketChoose" onchange="changeSupermarket()">
-    {% for sup in supermarkets%}
-      <option value="{{sup.id}}">{{sup}}</option>
-      {{sup}} <BR>
-    {% endfor %}
-  </select>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="#">Market List</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item active">
+          <a class="nav-link" href="#">List <span class="sr-only"></span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Supermarkets</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">Recipes</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+
   <div class="List">
     <div class="ListHeader">
+      <label for="supermarket">Choose a supermarket:</label>
+      <select name="supermarkets" id="supermarketChoose" onchange="changeSupermarket()">
+        {% for sup in supermarkets%}
+          <option value="{{sup.id}}">{{sup}}</option>
+          {{sup}} <BR>
+        {% endfor %}
+      </select> <BR>
       Products in the list <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#ModalInsert" onclick="saveAdd()"><i class="fa fa-plus"></i></button>
     </div>
     <div class="toBuyItemList">
@@ -159,19 +182,119 @@ ADD Recipe
 MY RECIPES: <BR>
 <label for="recipes">Choose a Recipe:</label>
   <select name="recipes" id="recipeChoose" onchange="changeRecipe()">
-    <option disabled selected value> -- select an recipe -- </option>
-    {% for recipe in recipes%}
+    <option disabled selected value> -- select a recipe -- </option>
+    {% for recipe in recipes %}
       <option value="{{recipe.id}}">{{recipe}}</option>
       {{recipe}} <BR>
     {% endfor %}
 </select>
 
-<div class="recipe">
-  <span>Itens of Recipe</span>
+Add to buy List: <button class="btn btn-success btn-sm" onclick="addRecipeToBuyList()"><i class="fa fa-plus"></i></button>
+<div class="recipe"> 
+  <span>Itens of Recipe</span> <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#ModalRecipe" onclick="getItemsToAddInRecipe()"><i class="fa fa-plus"></i></button>
 </div>
+
+<div class="modal fade" id="ModalRecipe" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Insert Product</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <label for="Produto">Produto: </label>
+        <select name="productChoose" id="productChoose">
+          <option disabled selected value> -- select a product -- </option>
+          {% for product in products %}
+            <option value="{{product.id}}">{{product}}</option>
+            {{product}} <BR>
+          {% endfor %}
+        </select><BR>
+        <label for="recipeQuantity">Quantidade: </label>
+        <input id="recipeQuantity" type="number" name="recipeQuantity"><BR>
+          <button type="submit" id="AddProdInRecipeBtn" class="AddProdInRecipeBtn btn btn-dark" onclick="insertProdInRecipe()">Add</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 </body>
 
 <script>
+  function TBD(){
+      // quando clicar em add os itens em recipe da pra buscar todos os itens que não estão disponíveis ainda.
+  }
+  function getItemsToAddInRecipe(){
+    // busca os itens para adicionar no select list
+    var recipe_id = document.getElementById("recipeChoose").value;
+    $.ajax({
+      url: "/get_items_to_add_in_recipe/",
+      method: "POST",
+      data: {
+        recipe_id: recipe_id,
+      },
+      headers: {
+        "X-CSRFToken": "{{csrf_token}}"
+      }, 
+      success: function(data) {
+        select = document.getElementById('productChoose');
+        for(i = select.options.length; i > 0; i--) {
+          select.remove(i);
+        }
+        for(var i = 0; i < data['products'].length; i++){
+          var opt = document.createElement('option');
+          opt.value = data['products'][i].id;
+          opt.innerHTML = data['products'][i].name;
+          select.appendChild(opt);
+        }
+      }
+    })
+  }
+
+  function addRecipeToBuyList(){
+    var recipe_id = document.getElementById("recipeChoose").value;
+    $.ajax({
+      url: "/add_recipe_to_buyList/",
+      method: "POST",
+      data: {
+        recipe_id: recipe_id,
+      },
+      headers: {
+        "X-CSRFToken": "{{csrf_token}}"
+      }, 
+      success: function(data) {
+        alert("Add recipe to buy List " + recipe_id);
+        // TBD
+      }
+    })
+    
+  }
+  function insertProdInRecipe(){
+    var x = document.getElementById("recipeChoose").value;
+    $productID = document.getElementById("productChoose").value;
+    $quantity = $('#recipeQuantity').val();
+
+    $.ajax({
+      url: "/add_prod_to_recipe/",
+      method: "POST",
+      data: {
+        recipe_id: x,
+        product_id: $productID,
+        quantity: $quantity
+      },
+      headers: {
+        "X-CSRFToken": "{{csrf_token}}"
+      }, 
+      success: function(data) {
+        var recipe_list = document.getElementsByClassName("recipe")[0];
+        insert_item_in_recipe(data['name'], $quantity, recipe_list);
+      }
+    })
+  }
+
   function addRecipe(){
     $recipe_name = $('#recipe-name').val();
     $recipe_time = $('#recipe-time').val();
@@ -208,20 +331,23 @@ MY RECIPES: <BR>
         insert_all_items_recipe(elementClass, data);
         //alert(data);
       }
-  })
+    })
+  }
+  function insert_item_in_recipe(name, quantity, recipe_list){
+    var div = '<div class="ProdInRecipe">'+name +" - "+quantity + "</div>";
+    $(recipe_list).append(div);
   }
 
   function remove_all_items_recipe(elementClass){
     var searchElem = elementClass.children;
-    for( var i=searchElem.length-1; i > 0; i--){
+    for( var i=searchElem.length-1; i > 1; i--){
       elementClass.removeChild(searchElem[i]);
     }
   }
 
   function insert_all_items_recipe(elementClass, data){
     for(var i = 0; i < data['products'].length; i++){
-      var div = '<div class="ProdInRecipe">'+data['products'][i].name + "</div>";
-      $(elementClass).append(div);
+      insert_item_in_recipe(data['products'][i].name, data['products'][i].quantity, elementClass)
     }
   }
 
@@ -261,7 +387,7 @@ MY RECIPES: <BR>
         insert_all_items(data);
       }
     
-  })
+    })
   }
 
   function addSupermarket(){
@@ -279,6 +405,7 @@ MY RECIPES: <BR>
       }
     })
   }
+
   $(document).ready(function() {
       $.ajax({
       url: "/request_all_itens/",
@@ -317,13 +444,13 @@ MY RECIPES: <BR>
         }
     })
   }
+
   function ChangeCheck(el){
     el = el.parentNode;
     el = el.parentNode; // I use two of these to get the div with item class
     $id = $(el).attr('id');
     $place = el.getAttribute('data-place');
     $url = "buy_prod/"+$id+"/";
-    
     $.ajax({
       url: $url,
       method: "POST",
@@ -343,7 +470,6 @@ MY RECIPES: <BR>
       }
     })
   }
-
 
   function delProd(el) {
     el = el.parentNode;
@@ -487,12 +613,12 @@ MY RECIPES: <BR>
   function remove_all_items(){
     var elementClass = document.getElementsByClassName("toBuyItemList")[0];
     var searchElem = elementClass.children;
-    for( var i=searchElem.length-1; i > 0; i--) {
+    for( var i=searchElem.length-1; i > 0; i--){
       elementClass.removeChild(searchElem[i]);
     }
     elementClass = document.getElementsByClassName("boughtItemList")[0];
     searchElem = elementClass.children;
-    for( var i=searchElem.length-1; i > 0; i--) {
+    for( var i=searchElem.length-1; i > 0; i--){
       elementClass.removeChild(searchElem[i]);
     }
   }
@@ -504,7 +630,6 @@ MY RECIPES: <BR>
     //console.log("part 2");
     for(var i = 0; i < data['products_bought'].length; i++) {
       createItem(true, data['products_bought'][i].prodId, data['products_bought'][i].name, data['products_bought'][i].place, data['products_bought'][i].quantity);
-    
     }
   }
 
@@ -512,7 +637,6 @@ MY RECIPES: <BR>
 // ordenação - acima 10 está sendo considerado abaixo de 2. Ele considera por digito.
 // Colocar uma devolutiva - item inserido com sucesso - item comprado com sucesso - item inserido na lista de compras - item excluido com sucesso
 // Tem certeza que gostaria de excluir?
-// Adicionar receitas
 
 </script>
 

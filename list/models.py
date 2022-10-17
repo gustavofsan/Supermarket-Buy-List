@@ -39,3 +39,6 @@ class ProductInRecipe(models.Model):
     product = models.ForeignKey(Product,  null=True, on_delete=models.SET_NULL)
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
     quantity = models.IntegerField()
+    
+    def __str__(self):
+        return self.recipe.name + " - " + self.product.name

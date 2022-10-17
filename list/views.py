@@ -4,21 +4,22 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 
 from .models import Product, ProductInRecipe, Recipe, Supermarket, SupermarketProduct
-from django.db.models import F
+from django.db.models import F, Q
 
 
 from django.contrib.auth.models import User, Group
 from rest_framework import viewsets
 from rest_framework import permissions
-from .serializers import UserSerializer, GroupSerializer
 
 
 def index(request):
     supermarkets = Supermarket.objects.all
     recipes = Recipe.objects.all
+    products = Product.objects.all #isso só serve pra insersir produtos nas receitas
     context = {
         'supermarkets':supermarkets,
-        'recipes':recipes
+        'recipes':recipes,
+        'products':products
     }
     return render(request, 'index.html', context)
 
@@ -109,7 +110,6 @@ def get_item_details(request):
         prod_id = request.POST['prod_id']
         supermarket_id = request.POST['supermarket_id']
         supermarketProduct = SupermarketProduct.objects.filter(supermarket__id=supermarket_id, product__id=prod_id)
-        #print(supermarketProduct[0].place)
         data = {
             "place": supermarketProduct[0].place,
         }
@@ -158,28 +158,44 @@ def get_all_itens_recipe(request,pk):
                                                                                 prodId=F('product__id'), 
                                                                                 name=F('product__name'),) 
                                                                                 #talvez precise trazer mais dados
-    print(products)
     data = {
         "products": list(products),
-        #"products_to_buy": list(products_to_buy),
-        #"products_bought": list(products_bought),
     }
     return JsonResponse(data)
 
+def add_prod_to_recipe(request):
+    if request.method == 'POST':
+        prod = Product.objects.get(id=request.POST['product_id'])
+        recipe = Recipe.objects.get(id=request.POST['recipe_id'])
+        newProdInRecipe = ProductInRecipe(
+            product = prod,
+            recipe = recipe,
+            quantity = request.POST['quantity'],
+        )
+        newProdInRecipe.save()
+        data = {
+            "name": prod.name,
+            "quantity": newProdInRecipe.quantity,
+            #"id": newRecipe.id,
+        }
+        return JsonResponse(data)
+    return HttpResponse("Failed!")
 
-class UserViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows users to be viewed or edited.
-    """
-    queryset = User.objects.all().order_by('-date_joined')
-    serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
+def add_recipe_to_buyList(request):
+    if request.method == 'POST':
+        data = {
+            #"id": newRecipe.id,
+        }
+        return JsonResponse(data)
+    return HttpResponse("Failed!")
 
-
-class GroupViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows groups to be viewed or edited.
-    """
-    queryset = Group.objects.all()
-    serializer_class = GroupSerializer
-    permission_classes = [permissions.IsAuthenticated]
+def get_items_to_add_in_recipe(request):
+    if request.method == 'POST':
+        current_recipe =  request.POST['recipe_id']
+        prodInRecipe = ProductInRecipe.objects.filter(recipe__id=current_recipe).values(prodId=F('product__id'),)
+        products = Product.objects.filter(~Q(id__in=prodInRecipe)).values()
+        data = {
+            "products": list(products),
+        }
+        return JsonResponse(data)
+    return HttpResponse("Failed!")
